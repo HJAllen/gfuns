@@ -1,0 +1,26 @@
+Package: gfuns
+Title: My Global Functions
+Version: 0.0.0.9000
+Authors@R: person("Joel", "Allen", email = "allen.joel@epa.gov", role = c("aut", "cre"))
+Description: Joel's global functions
+Depends: R (>= 3.5.0)
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports: magrittr,
+    dplyr,
+    ggplot2,
+    RMariaDB,
+    DBI,
+    tibble,
+    purrr,
+    pander,
+    flextable,
+    officer,
+    magick,
+    knitr,
+    lubridate,
+    DBI,
+    RMariaDB,
+    readxl
+RoxygenNote: 6.1.0
