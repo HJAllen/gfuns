@@ -4,15 +4,25 @@
 \alias{timeExcel_Posix}
 \title{Time values in Excel spreadsheets are imported as Posix}
 \usage{
-timeExcel_Posix(date_, time_, tZ = Tzone)
+timeExcel_Posix(
+  date_,
+  time_,
+  TZin = "UTC",
+  TZout = "Etc/GMT+5",
+  origin = as.POSIXct("1899-12-31", tz = "UTC")
+)
 }
 \arguments{
 \item{date_}{POSIX date}
 
 \item{time_}{POSIX time}
 
-\item{tZ}{timezone}
+\item{TZin}{original timezone}
+
+\item{TZout}{output timezone}
+
+\item{origin}{date/time origin}
 }
 \description{
-Defaults to the origin date and UTC timezone of microsoft excel which is non-standard. This function extracts the hour, minute, second values and creates a lubridate hms object with specified timezone which can then be combined with _Date to generate _DateTime value Timezone Etc/GMT-6 is Eastern Standard Time
+Defaults to the origin date and UTC timezone of microsoft excel which is non-standard 1899-12-31. This function extracts the hour, minute, second values and creates a lubridate hms object with specified timezone which can then be combined with _Date to generate _DateTime value Timezone Etc/GMT-6 is Eastern Standard Time
 }

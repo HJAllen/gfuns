@@ -4,12 +4,23 @@
 \alias{cat_ptr}
 \title{Create pandoc table}
 \usage{
-cat_ptr(df, Digits = 3, Caption = NULL, Justify = "left",
-  Style = "simple", Split.table = Inf, Split.cells = Inf,
-  Keep.line.breaks = TRUE, Tag = NULL,
-  font.s = "\\\\footnotesize\\n", first.row.names = FALSE,
-  row.names.null = TRUE, parse.pattern = "_", parse.replace = " ",
-  Latex = TRUE)
+cat_ptr(
+  df,
+  Digits = 3,
+  Caption = NULL,
+  Justify = "left",
+  Style = "simple",
+  Split.table = Inf,
+  Split.cells = Inf,
+  Keep.line.breaks = TRUE,
+  Tag = NULL,
+  font.s = "\\\\footnotesize\\n",
+  first.row.names = FALSE,
+  row.names.null = TRUE,
+  parse.pattern = "_",
+  parse.replace = " ",
+  Latex = TRUE
+)
 }
 \arguments{
 \item{df}{data frame for table}

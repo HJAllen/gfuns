@@ -4,10 +4,12 @@
 \alias{cv}
 \title{Coefficient of variation}
 \usage{
-cv(x, ...)
+cv(x, sigFig = NULL, ...)
 }
 \arguments{
 \item{x}{vector}
+
+\item{sigFig}{if not null, the number of significant digits to report}
 
 \item{...}{parameters to be passed to sd and mean}
 }

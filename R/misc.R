@@ -1,10 +1,54 @@
+#' Load Libraries
+#'
+#' Load libraries if not already loaded
+#' @param l character vector of libraries to load
+#' @export
+ll <- function(l = NULL){
+  if(!is.null(l)){
+    # load Libraries
+    for(p in l){
+      # print(p)
+      if(!p %in% (.packages())){
+        suppressPackageStartupMessages(
+          library(p, character.only = TRUE)
+        )
+      }
+    }
+    # rm("p")
+  } else message("l is NULL, no libraries loaded")
+}
+
+#' Reload Libraries
+#'
+#' Reload libraries if already loaded
+#' @param l character vector of libraries to load
+#' @export
+rll <- function(l = NULL){
+  if(!is.null(l)){
+    # reload Libraries
+    for(p in l){
+      if(any(grepl(p, search()))){
+        do.call("detach", list(name = paste0("package:", p), unload = TRUE))
+        message(paste("Package", p, "unloaded"))
+      } else{
+        message(paste(p, "Is not loaded"))
+      }
+      if(!p %in% .packages()){
+        suppressPackageStartupMessages(
+          library(p, character.only = TRUE)
+        )
+        message(paste("Package", p, "has been loaded"))
+      }
+    }
+  } else message("l is NULL, no libraries loaded")
+}
+
 #' Load subset or all .RData objects from submitted path
 #' @param Path path to Robjects
 #' @param objectList list of objects to load
 #' @export
-###################################
 loadRData <-
-  function(Path = lh_Robjects, objectList = NULL){
+  function(Path = gfuns::sg("lh_Robjects"), objectList = NULL){
     # If Path doesn't exist, quit
     if(!dir.exists(Path)){
       warning(paste("Path does not exist. Data not loaded."))
@@ -28,64 +72,6 @@ loadRData <-
       lapply(fList, load, .GlobalEnv, verbose = F)
   }
 
-###########################################
-#' Plot knit Function
-#'
-#' This function dynamically produces a knitr chunk with appropriate captions and labels which is then knitted into the main document with cat.  Any chunk option could be added for full control over chunk.
-#' @param chunkLabel text for chunk label which is also used for figure file name
-#' @param capt text for caption
-#' @param plt plot object to be placed
-#' @param pos latex option for keeping the plot here
-#' @export
-plotKknit <- function(chunkLabel, capt, plt, pos='H', ...)
-{
-  cat(
-    knit(
-      text =
-        knit_expand(text =
-                      "<<{{chunkLabel}},eval=TRUE,fig.pos='{{pos}}',fig.cap='{{capt}}'>>=\nplt\n@")
-    )
-  )
-}
-
-#' Custom ggsave function
-#'
-#' Allows for multiple file formats
-#'
-#' @param filename filename
-#' @param path path where plots should be saved
-#' @param plt plot to be printed
-#' @param formats list of formats to be saved
-#' @param dpi image resolution
-#' @export
-ggsave_f <-
-  function(filename, path = NULL, plt = last_plot(),
-           formats = c("pdf", "png", "wmf"), dpi = 300) {
-    # print(match.call())
-    # if plt.prefix is not NULL then add
-    if(!is.null(path)){
-      filename <- file.path(path, filename)
-    }else{
-      filename <- file.path(wd_plots, filename)
-    }
-    l_ply(
-      seq(1:length(formats)),
-      .fun = function(x) {
-        # 4:3 perspective
-        ggplot2::ggsave(
-          filename = paste(filename, '_4.3.', formats[x], sep = ''),
-          plot = plt, width = 6, height = 6 / (4/3), units = "in",
-          dpi = dpi
-        )
-        # 16:9 perspective
-        ggplot2::ggsave(
-          filename = paste(filename, '_16.9.', formats[x], sep = ''),
-          plot = plt, width = 7.5 * (16/9), height = 7.5, units = "in",
-          dpi = dpi
-        )
-      }
-    )
-  }
 
 #' Signature page table function for latex signature page
 #'
@@ -105,7 +91,7 @@ sigFunc<-function(sigs, online = NULL, vspace = '0.75in'){
   # set \dateline length
   cat('\\ifcsdef{dateline}{}{\\newlength{\\dateline}}\n')
   cat('\\begin{minipage}{\\textwidth}\n')
-  l_ply(sigs,
+  plyr::l_ply(sigs,
         .fun = function(x){
           lvar <- gsub('[^a-zA-Z0-9.]', '', x$name)
           cat(paste0('\\setlength\\dateline{0.7\\textwidth}',
@@ -121,7 +107,7 @@ sigFunc<-function(sigs, online = NULL, vspace = '0.75in'){
               '\\rule{0.5\\textwidth}{0.5pt}\\hspace{0.2\\textwidth}\\rule{0.3\\textwidth}{0.5pt}',
               paste0('\\advance\\dateline by -\\', lvar),
               paste0(x$name, '\\hspace{\\dateline}Date\\newline'),
-              laply(x$title,
+              plyr::laply(x$title,
                       .fun = function(y){
                         paste0(y, '\\newline')
                       }),
@@ -159,85 +145,70 @@ time2DT <- function(date.v, time.v){
   t.df <- data.frame(Date = date.v, Time = time.v)
   #check format of t.df
   if(!all(colnames(t.df) %in% c('Date','Time'))) return('t.df columns mislabeled')
-  if(!is.POSIXt(t.df$Date) | !is.POSIXt(t.df$Time)) return("t.df must be POSIX")
+  if(!lubridate::is.POSIXt(t.df$Date) |
+     !lubridate::is.POSIXt(t.df$Time)) return("t.df must be POSIX")
 
   # t.df$Time+days(t.df$Date-floor_date(t.df$Time,'days'))
   lubridate::ymd_hms(paste(t.df$Date,
                            lubridate::hour(t.df$Time), ":",
                            lubridate::minute(t.df$Time), ":",
-                           lubridate::second(t.df$Time)), tz = tz(t.df$Date))
+                           lubridate::second(t.df$Time)), tz = lubridate::tz(t.df$Date))
 }
 
-#' Function to modify ggplot facet_grid panel labels
+#' #' Function to modify ggplot facet_grid panel labels
+#' #' @export
+#' plot_labeller <- function(variable,value){
+#'   return(plot_names[value])
+#' }
+
+
+#' Separate multiple columns
+#'
+#' Takes a data frame with multiple columns to split and returns resulting frame
+#' @param .data data frame with columns to split
+#' @param .cols columns to split
+#' @param .suffix suffix to add to each column name for expansion
+#' @param .sep separator string in .cols
 #' @export
-plot_labeller <- function(variable,value){
-  return(plot_names[value])
-}
-
-###############################################
-
-#' Function to parse linear models for adding to plot
-#' @param lm lm object
-#' @export
-lm_eqn <- function(m) {
-
-  l <- list(a = format(coef(m)[1], digits = 2),
-            b = format(abs(coef(m)[2]), digits = 4),
-            r2 = format(summary(m)$r.squared, digits = 3))
-
-  if (coef(m)[2] >= 0){
-    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,l)
-  } else {
-    eq <- substitute(italic(y) == a - b %.% italic(x)*","~~italic(r)^2~"="~r2,l)
+separate_multi <- function(.data, .cols, .suffix, .sep){
+  for(x in .cols){
+    .data %<>%
+      tidyr::separate(x,
+                      c(x, paste(x, .suffix, sep = "_")),
+                      sep = .sep)
   }
-  as.character(as.expression(eq));
+  .data
 }
-#' Function to parse linear models for adding to plot
-#' @param lm lm object
-#' @export
-lm_eqn2 <- function(x) {
-  m<-lm(as.formula(paste0(names(x)[2],'~',names(x)[1])),data=x)
-  l <- list(a = format(coef(m)[1], digits = 2),
-            b = format(abs(coef(m)[2]), digits = 4),
-            r2 = format(summary(m)$r.squared, digits = 3))
-
-  if (coef(m)[2] >= 0){
-    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,l)
-  } else {
-    eq <- substitute(italic(y) == a - b %.% italic(x)*","~~italic(r)^2~"="~r2,l)
-  }
-  as.character(as.expression(eq));
-}
-
-#' Workaround to suppress unwanted readxl output
-#' @export
-read_excelq <-  function(...) {
-  quiet_read <- purrr::quietly(readxl::read_excel)
-  out <- quiet_read(...)
-  if(length(c(out[["warnings"]], out[["messages"]])) == 0)
-    return(out[["result"]])
-  else readxl::read_excel(...)
-}
-
 
 #' Time values in Excel spreadsheets are imported as Posix
 #'
-#' Defaults to the origin date and UTC timezone of microsoft excel which is non-standard. This function extracts the hour, minute, second values and creates a lubridate hms object with specified timezone which can then be combined with _Date to generate _DateTime value Timezone Etc/GMT-6 is Eastern Standard Time
+#' Defaults to the origin date and UTC timezone of microsoft excel which is non-standard 1899-12-31. This function extracts the hour, minute, second values and creates a lubridate hms object with specified timezone which can then be combined with _Date to generate _DateTime value Timezone Etc/GMT-6 is Eastern Standard Time
 #' @param date_ POSIX date
 #' @param time_ POSIX time
-#' @param tZ timezone
+#' @param origin date/time origin
+#' @param TZin original timezone
+#' @param TZout output timezone
 #' @export
 timeExcel_Posix <-
-  function(date_, time_, tZ = Tzone){
-    year_ <- lubridate::year(date_)
-    month_ <- lubridate::month(date_)
-    day_ <- lubridate::day(date_)
-    hour_ <- lubridate::hour(time_)
-    minute_ <- lubridate::minute(time_)
-    DT <- paste(
-      paste(year_, month_, day_, sep = "-"),
-      paste(hour_, minute_, sep = ":"))
-    lubridate::ymd_hm(DT, tz = tZ)
+  function(date_, time_, TZin = "UTC", TZout = "Etc/GMT+5", origin = as.POSIXct("1899-12-31", tz = "UTC")){
+    # Get seconds since excel origin
+    tSecs <- as.numeric(time_) - as.numeric(origin)
+    # Add to Date
+    DT <- as.numeric(date_) + tSecs
+    as.POSIXct(DT, origin = as.POSIXct("1970-01-01", tz = TZin), tz = TZout) - Olson$offset[Olson$OlsonNames == TZout]
+
+    # year_ <- lubridate::year(date_)
+    # month_ <- lubridate::month(date_)
+    # day_ <- lubridate::day(date_)
+    # hour_ <- lubridate::hour(time_)
+    # minute_ <- lubridate::minute(time_)
+    # second_ <- lubridate::second(time_)
+    # DT <- paste(
+    #   paste(year_,
+    #         sprintf("%02d", month_),
+    #         sprintf("%02d", day_), sep = "-"),
+    #   paste(sprintf("%02d", hour_),
+    #         sprintf("%02d", minute_),
+    #         sprintf("%02d", second_), sep = ":"))
+    # lubridate::ymd_hms(DT, tz = tZ)
   }
-
-

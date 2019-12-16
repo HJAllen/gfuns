@@ -43,7 +43,7 @@ cat_ft <- function(df, Digits = 3, Caption = NULL,
     df[,date.test] <-
       format(df[,date.test],
              format = '%Y\\-%m\\-%d',
-             tz = tz(df[,date.test]))
+             tz = lubridate::tz(df[,date.test]))
   }
 
   #test for logical class columns in df and convert to character
@@ -120,6 +120,8 @@ cat_ft <- function(df, Digits = 3, Caption = NULL,
     dfT <- flextable::delete_part(dfT)
   }
 
+  # dfT <- flextable::autofit(dfT)
+
   # theme_ <- get(theme_, asNamespace("flextable"))
   # # dfT <- flextable::theme_vanilla(dfT)
   # dfT <- do.call(theme_, list(x = dfT))
@@ -132,7 +134,8 @@ cat_ft <- function(df, Digits = 3, Caption = NULL,
   # cat("    </div>")
   # dfT
   cat("```{=openxml}\n")
-  cat(flextable:::docx_str.regulartable(dfT), "\n")
+  cat(flextable:::docx_str.flextable(dfT), "\n")
+  # cat(flextable:::docx_str.regulartable(dfT), "\n")
   # paste0(cat(Caption,"\n\n"))
   cat("```\n", Caption, "\n</div>\n")
 }
@@ -147,8 +150,8 @@ dim_pretty2 <- function(x, part = "all", linefeed = "\n"){
   dimensions <- list()
   for (j in part) {
     if (flextable:::nrow_part(x, j) > 0) {
-      dimensions[[j]] <- optimal_sizes_simple_tabpart(x[[j]])
-        # optimal_sizes(x[[j]])
+      dimensions[[j]] <- #optimal_sizes_simple_tabpart(x[[j]])
+        flextable:::optimal_sizes(x[[j]])
     }
     else {
       dimensions[[j]] <- list(widths = rep(0, length(x$col_keys)),

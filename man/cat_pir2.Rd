@@ -4,9 +4,14 @@
 \alias{cat_pir2}
 \title{Format and add image using pander::pandoc.image.return}
 \usage{
-cat_pir2(plot_g, Caption = NULL, Tag = NULL,
+cat_pir2(
+  plot_g,
+  Caption = NULL,
+  Tag = NULL,
   Width = knitr::opts_chunk$get("fig.width"),
-  Height = knitr::opts_chunk$get("fig.height"), vec.res = 300)
+  Height = knitr::opts_chunk$get("fig.height"),
+  vec.res = 300
+)
 }
 \arguments{
 \item{plot_g}{plot to be added to document}

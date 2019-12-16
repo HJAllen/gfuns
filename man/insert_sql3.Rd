@@ -4,9 +4,15 @@
 \alias{insert_sql3}
 \title{Function to insert values into db table}
 \usage{
-insert_sql3(dataF, tName, replaceifexists = FALSE,
-  Group = "EPA_harshadb", defaultFile = file.path(gfuns::sg("ws"),
-  ".my.cnf"), verbose = FALSE, ...)
+insert_sql3(
+  dataF,
+  tName,
+  replaceifexists = FALSE,
+  Group = "EPA_harshadb",
+  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{dataF}{data frame to be appended}

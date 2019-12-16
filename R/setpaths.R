@@ -2,123 +2,82 @@
 #'
 #' Sys.getenv is too much typing
 #'
-#' Returns Sys.getenv() value
+#' This function is included for backward compatibility. Paths are now in a list named path and are accessed via path$pathName or path[[`pathName`]]. Previously, paths were set in the system enironment. It is still capable of returning a system environment variable as it looks for x in the system environment before path.
 #' @param x Environment variable string
 #' @export
 sg <- function(x){
-  if(Sys.getenv(x) == ""){
-    stop(paste("Environment var", x, "is not set."))
-  }else Sys.getenv(x)
+  if(Sys.getenv(x) != ""){
+    Sys.getenv(x)
+  } else if(!is.null(path[[x]])){
+    path[[x]]
+  } else stop(paste("path", x, "is not set."))
 }
-
 
 #' Set paths
 #'
-#' Set paths relative to working directory
+#' Set paths for easy access
 #'
-#' @param SubD character vector of subdirectories to use to build paths
+#' This function sets paths based on the workspace and working directory. workspace is the path to the base workspace and the working directory is project specific.
+#' @return
+#' A list named paths is assigned to the global environment.
+#' @param workspace Path to workspace
 #' @importFrom magrittr %>%
 #' @export
-setpaths <- function(SubD = c('defaults', 'data', 'Robjects', 'figures', 'plots')){
-  # Check for OneDrive
-  OneDrive <- Sys.getenv("OneDrive") != ""
+setpaths <- function(workspace = NULL){
+  if(!exists("verbose")){
+    verbose <- FALSE
+  }
+
+  # Set workspace if NULL
+  if(is.null(workspace)){
+    # Check for OneDrive
+    OneDrive <- Sys.getenv("OneDrive")
+
+    # Set root based on OneDrive availability
+    workspace <-
+      normalizePath(
+        file.path(ifelse(OneDrive != "",
+                         OneDrive,
+                         Sys.getenv("HomePath"))),
+        winslash = "/", mustWork = TRUE)
+  }
 
   # Create path list
   paths <-
-    list(# ws = workspace
-      ws = list(
-        Name = "ws",
-        Path = if(Sys.getenv("OneDrive") != ""){
-          normalizePath(file.path(Sys.getenv("OneDrive"),"workspace"),
-                        winslash = "/", mustWork = FALSE)
-        }else{normalizePath(file.path(Sys.getenv("HomePath"),"workspace"),
-                            winslash = "/", mustWork = FALSE)},
-        SubD = SubD),
+    tibble::tribble(
+      ~Name, ~Path,
+      # ws = workspace
+      "ws", normalizePath(file.path(workspace, "workspace"),
+                          winslash = "/", mustWork = FALSE),
       # lh = Lake-Harsha directory
-      lh = list(
-        Name = "lh",
-        Path = if(Sys.getenv("OneDrive") != ""){
-          normalizePath(
-            file.path(
-              Sys.getenv("OneDrive"),
-              "workspace/Lake-Harsha"),
-            winslash = "/", mustWork = FALSE)
-        }else{
-          normalizePath(
-            file.path(
-              Sys.getenv("HomePath"),
-              "workspace/Lake-Harsha"),
-            winslash = "/", mustWork = FALSE)},
-        SubD = SubD),#dir(sg("lh_data"))),
-      # lh = Lake-Harsha data directory
-      lhd = list(
-        Name = "lhd",
-        Path = if(Sys.getenv("OneDrive") != ""){
-          normalizePath(
-            file.path(
-              Sys.getenv("OneDrive"),
-              "workspace/Lake-Harsha/data"),
-            winslash = "/", mustWork = FALSE)
-        }else{
-          normalizePath(
-            file.path(
-              Sys.getenv("HomePath"),
-              "workspace/Lake-Harsha/data"),
-            winslash = "/", mustWork = FALSE)},
-        SubD = if(Sys.getenv("OneDrive") != ""){
-          list.dirs(
-            normalizePath(
-              file.path(
-                Sys.getenv("OneDrive"),
-                "workspace/Lake-Harsha/data"),
-              winslash = "/", mustWork = FALSE),
-            full.names = FALSE, recursive = FALSE)
-        }else{
-          list.dirs(normalizePath(
-            file.path(
-              Sys.getenv("HomePath"),
-              "workspace/Lake-Harsha/data"),
-            winslash = "/", mustWork = FALSE),
-            full.names = FALSE, recursive = FALSE)
-        }),
+      "lh", normalizePath(file.path(workspace, "workspace/Lake-Harsha"),
+                          winslash = "/", mustWork = FALSE),
       # wd = working directory
-      wd = list(
-        Name = "wd",
-        Path = normalizePath(getwd(), winslash = "/", mustWork = FALSE),
-        SubD = list.dirs(normalizePath(
-          getwd(),
-          winslash = "/", mustWork = FALSE),
-          full.names = FALSE, recursive = FALSE)),
+      "wd", normalizePath(getwd(), winslash = "/", mustWork = FALSE),
       # wdp = working directory parent
-      wdp = list(
-        Name = "wdp",
-        Path = normalizePath(file.path(dirname(getwd())),
-                             winslash = "/", mustWork = FALSE),
-        SubD = SubD),
+      "wdp", normalizePath(file.path(dirname(getwd())),
+                           winslash = "/", mustWork = FALSE),
       # L: drive
-      netmc = list(
-        Name = "netmc",
-        Path = normalizePath(file.path("L:/Priv/Cin/ORD/LakeHarshaMC"),
-                             winslash = "/", mustWork = FALSE),
-        SubD = NULL)
+      "netmc", normalizePath(file.path("L:/Priv/Cin/ORD/LakeHarshaMC"),
+                             winslash = "/", mustWork = FALSE)
     ) %>%
-    purrr::map(function(x){
-      {if(!is.null(x$SubD)){
-        x$SubD <- x$SubD[!grepl("\\.R", x$SubD)]
-        tibble::tibble(name = c(x$Name, paste(x$Name, basename(x$SubD), sep = "_")),
-                       path = c(x$Path, normalizePath(file.path(x$Path, basename(x$SubD)),
-                                                      winslash = "/", mustWork = FALSE)))
-      }else{
-        tibble::tibble(name = x$Name,
-                       path = x$Path)
-      }} %>%
-        dplyr::filter(dir.exists(path)) %>%
-        tibble::deframe()
+    purrr::pmap(.f = function(Name, Path){
+      dirs <-
+        list.dirs(normalizePath(
+          Path,
+          winslash = "/", mustWork = FALSE),
+          full.names = FALSE, recursive = FALSE)
+      dirs <- dirs[!grepl("^\\.", dirs)]
+
+      tibble::tibble(Name = c(Name, paste(Name, dirs, sep = "_")),
+                     Path = c(Path, file.path(Path, dirs))) %>%
+        tibble::deframe() #%>%
     }) %>%
-    purrr::flatten()
+    purrr::flatten() %>%
+    .[order(names(.))]
 
-  do.call(Sys.setenv, paths)
-
+   assign("path", paths, envir = .GlobalEnv)
+   if(verbose) message("path set")
 }
 
 #' #' Set paths

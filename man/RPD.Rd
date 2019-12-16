@@ -4,10 +4,12 @@
 \alias{RPD}
 \title{Calculate Relative Percent Difference}
 \usage{
-RPD(x)
+RPD(x, sigFig = NULL)
 }
 \arguments{
 \item{x}{vector of length 2}
+
+\item{sigFig}{if not null, the number of significant digits to report}
 }
 \description{
 Calculate Relative Percent Difference

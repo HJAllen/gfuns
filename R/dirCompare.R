@@ -51,7 +51,7 @@ dirCompare <- function(dir1, dir2, Recursive = FALSE,
   }
 
   # Compare
-  fDif <- anti_join(dir1_, dir2_)
+  fDif <- dplyr::anti_join(dir1_, dir2_)
   print(paste(nrow(dir1_), "files in", dir1))
   print(paste(nrow(dir2_), "files in", dir2))
   if(is.null(fDif)){

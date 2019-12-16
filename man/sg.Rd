@@ -13,5 +13,5 @@ sg(x)
 Sys.getenv is too much typing
 }
 \details{
-Returns Sys.getenv() value
+This function is included for backward compatibility. Paths are now in a list named path and are accessed via path$pathName or path[[`pathName`]]. Previously, paths were set in the system enironment. It is still capable of returning a system environment variable as it looks for x in the system environment before path.
 }

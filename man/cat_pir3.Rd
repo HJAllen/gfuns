@@ -6,9 +6,15 @@
 pixels in a letter page = 612 x 792 so pixels per inch = 612/8.5 = 72
 To use function like map, caption and tag are split into pre and post elements and glued using multFig and multiTbl}
 \usage{
-cat_pir3(plot_g, Caption = NULL, TagPre = NULL, TagPost = NULL,
+cat_pir3(
+  plot_g,
+  Caption = NULL,
+  TagPre = NULL,
+  TagPost = NULL,
   Width = knitr::opts_chunk$get("fig.width"),
-  Height = knitr::opts_chunk$get("fig.height"), vec.res = 300)
+  Height = knitr::opts_chunk$get("fig.height"),
+  vec.res = 300
+)
 }
 \arguments{
 \item{plot_g}{plot to be added to document}

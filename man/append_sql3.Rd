@@ -4,9 +4,15 @@
 \alias{append_sql3}
 \title{Function to append dataframe to db table}
 \usage{
-append_sql3(dataF, tName, Group = "EPA_harshadb",
-  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"), header_ = FALSE,
-  verbose = FALSE, ...)
+append_sql3(
+  dataF,
+  tName,
+  Group = "EPA_harshadb",
+  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
+  header_ = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{dataF}{data frame to be appended}

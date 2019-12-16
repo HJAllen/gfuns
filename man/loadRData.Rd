@@ -4,7 +4,7 @@
 \alias{loadRData}
 \title{Load subset or all .RData objects from submitted path}
 \usage{
-loadRData(Path = lh_Robjects, objectList = NULL)
+loadRData(Path = gfuns::sg("lh_Robjects"), objectList = NULL)
 }
 \arguments{
 \item{Path}{path to Robjects}

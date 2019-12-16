@@ -4,8 +4,13 @@
 \alias{dirCompare}
 \title{Recursively compare two directories}
 \usage{
-dirCompare(dir1, dir2, Recursive = FALSE, dir1.excludes = NULL,
-  compAttributes = FALSE)
+dirCompare(
+  dir1,
+  dir2,
+  Recursive = FALSE,
+  dir1.excludes = NULL,
+  compAttributes = FALSE
+)
 }
 \arguments{
 \item{dir1}{directory to compare}

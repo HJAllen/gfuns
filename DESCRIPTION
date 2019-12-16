@@ -2,13 +2,14 @@ Package: gfuns
 Title: My Global Functions
 Version: 0.0.0.9000
 Authors@R: person("Joel", "Allen", email = "allen.joel@epa.gov", role = c("aut", "cre"))
-Description: Joel's global functions
-Depends: R (>= 3.5.0)
-License: MIT
+Description: Joel's global functions.
+Depends: R (>= 3.5.0),
+    magrittr
+License: CC0
 Encoding: UTF-8
 LazyData: true
-Imports: magrittr,
-    dplyr,
+Imports: dplyr,
+    plyr,
     ggplot2,
     RMariaDB,
     DBI,
@@ -20,7 +21,8 @@ Imports: magrittr,
     magick,
     knitr,
     lubridate,
-    DBI,
-    RMariaDB,
-    readxl
-RoxygenNote: 6.1.0
+    readxl,
+    measurements,
+    stats,
+    utils
+RoxygenNote: 7.0.2

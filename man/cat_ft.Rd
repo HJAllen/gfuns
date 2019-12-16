@@ -4,12 +4,25 @@
 \alias{cat_ft}
 \title{Create and format flextable}
 \usage{
-cat_ft(df, Digits = 3, Caption = NULL, Tag = NULL,
-  noHeader = FALSE, theme_ = "theme_vanilla",
-  first.row.names = FALSE, row.names.null = TRUE,
-  parse.pattern = "_", parse.replace = " ", font_ = "Cambria",
-  fontsizeH = 8, fontsizeB = 8, rotationH = NULL, rotationB = NULL,
-  alignB = "left", formatter = NULL)
+cat_ft(
+  df,
+  Digits = 3,
+  Caption = NULL,
+  Tag = NULL,
+  noHeader = FALSE,
+  theme_ = "theme_vanilla",
+  first.row.names = FALSE,
+  row.names.null = TRUE,
+  parse.pattern = "_",
+  parse.replace = " ",
+  font_ = "Cambria",
+  fontsizeH = 8,
+  fontsizeB = 8,
+  rotationH = NULL,
+  rotationB = NULL,
+  alignB = "left",
+  formatter = NULL
+)
 }
 \arguments{
 \item{df}{data frame for table}

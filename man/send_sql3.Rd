@@ -4,12 +4,26 @@
 \alias{send_sql3}
 \title{Function to send sql statement}
 \usage{
-send_sql3(sql, Group = "EPA_harshadb",
-  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"), verbose = FALSE,
-  CLIENT_MULTI_STATEMENTS_ = TRUE, ...)
+send_sql3(
+  dataF,
+  tName,
+  returnClass = "data.table",
+  sql = "SELECT * FROM ",
+  Group = "EPA_harshadb",
+  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
+  verbose = FALSE,
+  CLIENT_MULTI_STATEMENTS_ = TRUE,
+  ...
+)
 }
 \arguments{
-\item{sql}{sql statement}
+\item{dataF}{If given, data frame of key values to be used in parameterized statement.}
+
+\item{tName}{table name}
+
+\item{returnClass}{class of return object. Should be one of data.table, tibble, or data.frame.}
+
+\item{sql}{sql statement. defaults to select}
 
 \item{Group}{Group identifier found in .my.cnf}
 

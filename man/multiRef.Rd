@@ -4,8 +4,7 @@
 \alias{multiRef}
 \title{Generalized function to insert multiple figure or table references}
 \usage{
-multiRef(pre = NULL, post = NULL, ref = NULL, s = "ref",
-  sep = ".")
+multiRef(pre = NULL, post = NULL, ref = NULL, s = "ref", sep = ".")
 }
 \arguments{
 \item{pre}{pre tag string}

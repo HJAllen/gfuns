@@ -35,7 +35,7 @@ cat_ptr <- function(df, Digits = 3, Caption = NULL, Justify='left',
     df[,date.test] <-
       format(df[,date.test],
              format = '%Y\\-%m\\-%d',
-             tz = tz(df[,date.test]))
+             tz = lubridate::tz(df[,date.test]))
   }
 
   # Make changes suitable for latex
@@ -43,7 +43,7 @@ cat_ptr <- function(df, Digits = 3, Caption = NULL, Justify='left',
     # test for columns with < or > sign
     if(any(grepl('[<>]', df))){
       df <-
-        tibble::as_tibble(llply(
+        tibble::as_tibble(plyr::llply(
           as.list(df),
           .fun = function(x){
             x <- sub('<', replacement = '\\\\textless ', x)

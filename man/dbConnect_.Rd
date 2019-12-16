@@ -4,9 +4,12 @@
 \alias{dbConnect_}
 \title{Wrapper to connect to db}
 \usage{
-dbConnect_(Group = "EPA_harshadb",
-  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"), verbose = FALSE,
-  ...)
+dbConnect_(
+  Group = "EPA_harshadb",
+  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{Group}{Group identifier found in .my.cnf}

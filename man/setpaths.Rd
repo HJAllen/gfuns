@@ -4,11 +4,17 @@
 \alias{setpaths}
 \title{Set paths}
 \usage{
-setpaths(SubD = c("defaults", "data", "Robjects", "figures", "plots"))
+setpaths(workspace = NULL)
 }
 \arguments{
-\item{SubD}{character vector of subdirectories to use to build paths}
+\item{workspace}{Path to workspace}
+}
+\value{
+A list named paths is assigned to the global environment.
 }
 \description{
-Set paths relative to working directory
+Set paths for easy access
+}
+\details{
+This function sets paths based on the workspace and working directory. workspace is the path to the base workspace and the working directory is project specific.
 }

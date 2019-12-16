@@ -4,14 +4,21 @@
 \alias{get_sql3}
 \title{Function to get data from sql statement}
 \usage{
-get_sql3(sql, Group = "EPA_harshadb",
-  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"), verbose = FALSE,
-  ...)
+get_sql3(
+  sql,
+  Group = "EPA_harshadb",
+  returnClass = "data.table",
+  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{sql}{sql statement}
 
 \item{Group}{Group identifier found in .my.cnf}
+
+\item{returnClass}{class of return object. Should be one of data.table, tibble, or data.frame.}
 
 \item{defaultFile}{file where Group credentials are found}
 
