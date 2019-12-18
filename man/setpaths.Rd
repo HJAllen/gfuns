@@ -4,10 +4,12 @@
 \alias{setpaths}
 \title{Set paths}
 \usage{
-setpaths(workspace = NULL)
+setpaths(workspace = NULL, recurse = NA)
 }
 \arguments{
 \item{workspace}{Path to workspace}
+
+\item{recurse}{list of directories to get resursively}
 }
 \value{
 A list named paths is assigned to the global environment.
@@ -16,5 +18,5 @@ A list named paths is assigned to the global environment.
 Set paths for easy access
 }
 \details{
-This function sets paths based on the workspace and working directory. workspace is the path to the base workspace and the working directory is project specific.
+This function sets paths based on the workspace and working directory. workspace is the path to the base workspace and the working directory is project specific. By default, workspace toplevel directories are returned. If recurse is given, return listed directories recursively.
 }

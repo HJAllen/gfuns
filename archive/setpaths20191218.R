@@ -13,89 +13,70 @@ sg <- function(x){
   } else stop(paste("path", x, "is not set."))
 }
 
-#' Get workspace
-#'
-#' Helper for setpaths to establish workspace programatically
-#'
-#' This function sets the workspace based on OS type and OneDrive availability.
-#' @return
-#' character value representing workspace directory.
-#' @importFrom magrittr %>%
-#' @export
-setWorkspace <- function(){
-
-  # If Windows
-  if(grepl("(?i)windows", .Platform$OS.type)){
-    # Check for OneDrive
-    OneDrive <- Sys.getenv("OneDrive")
-
-    # Set root based on OneDrive availability
-    normalizePath(
-      file.path(ifelse(OneDrive != "",
-                       OneDrive,
-                       Sys.getenv("HomePath")),
-                "workspace"),
-      winslash = "/", mustWork = TRUE)
-  } else if(grepl("(?i)nix", .Platform$OS.type)){
-    # Unix type
-    normalizePath(
-      file.path(Sys.getenv("HOME"),
-                "workspace"),
-      winslash = "/", mustWork = TRUE)
-  }
-}
-
 #' Set paths
 #'
 #' Set paths for easy access
 #'
-#' This function sets paths based on the workspace and working directory. workspace is the path to the base workspace and the working directory is project specific. By default, workspace toplevel directories are returned. If recurse is given, return listed directories recursively.
+#' This function sets paths based on the workspace and working directory. workspace is the path to the base workspace and the working directory is project specific.
 #' @return
 #' A list named paths is assigned to the global environment.
 #' @param workspace Path to workspace
-#' @param recurse list of directories to get resursively
 #' @importFrom magrittr %>%
 #' @export
-setpaths <- function(workspace = NULL, recurse = NA){
+setpaths <- function(workspace = NULL){
   if(!exists("verbose")){
     verbose <- FALSE
   }
 
   # Set workspace if NULL
   if(is.null(workspace)){
-    workspace <- list(ws = setWorkspace())
+    # Check for OneDrive
+    OneDrive <- Sys.getenv("OneDrive")
+
+    # Set root based on OneDrive availability
+    workspace <-
+      normalizePath(
+        file.path(ifelse(OneDrive != "",
+                         OneDrive,
+                         Sys.getenv("HomePath"))),
+        winslash = "/", mustWork = TRUE)
   }
 
-  # workspace <- list(ws = workspace, LMC = normalizePath(file.path("L:/Priv/Cin/ORD/LakeHarshaMC"),
-  #                                         winslash = "/", mustWork = FALSE))
-  # recurse <- list("LHdata")
+  # Create path list
+  paths <-
+    tibble::tribble(
+      ~Name, ~Path,
+      # ws = workspace
+      "ws", normalizePath(file.path(workspace, "workspace"),
+                          winslash = "/", mustWork = FALSE),
+      # lh = Lake-Harsha directory
+      "lh", normalizePath(file.path(workspace, "workspace/Lake-Harsha"),
+                          winslash = "/", mustWork = FALSE),
+      # wd = working directory
+      "wd", normalizePath(getwd(), winslash = "/", mustWork = FALSE),
+      # wdp = working directory parent
+      "wdp", normalizePath(file.path(dirname(getwd())),
+                           winslash = "/", mustWork = FALSE),
+      # L: drive
+      "netmc", normalizePath(file.path("L:/Priv/Cin/ORD/LakeHarshaMC"),
+                             winslash = "/", mustWork = FALSE)
+    ) %>%
+    purrr::pmap(.f = function(Name, Path){
+      dirs <-
+        list.dirs(normalizePath(
+          Path,
+          winslash = "/", mustWork = FALSE),
+          full.names = FALSE, recursive = FALSE)
+      dirs <- dirs[!grepl("^\\.", dirs)]
 
-  # Create path list starting with dirs in workspace
-  wsPaths <-
-    lapply(workspace, function(x){
-      as.list(list.dirs(x, recursive = FALSE)) %>%
-        stats::setNames(paste0("_", basename(unlist(.))))
-    })
+      tibble::tibble(Name = c(Name, paste(Name, dirs, sep = "_")),
+                     Path = c(Path, file.path(Path, dirs))) %>%
+        tibble::deframe() #%>%
+    }) %>%
+    purrr::flatten() %>%
+    .[order(names(.))]
 
-  # Dirs to get recursively
-  if(!is.na(recurse)){
-    wsPaths <-
-      lapply(wsPaths, function(pList){
-        if(any(grepl(recurse, pList))){
-          c(pList,
-            unlist(
-              lapply(recurse, function(x, pList){
-                Path <- as.list(list.dirs(pList[grepl(paste0("(?i)", x, "$"), pList)]))
-                pNames <- paste0(".",
-                                 regmatches(Path, gregexpr(paste0("(?i)", x, ".+$"), Path)))
-                names(Path) <- pNames
-                Path
-              }, unlist(pList))))
-        } else pList
-      })
-  }
-
-   assign("path", wsPaths, envir = .GlobalEnv)
+   assign("path", paths, envir = .GlobalEnv)
    if(verbose) message("path set")
 }
 
