@@ -114,30 +114,49 @@ cat_pir2 <- function(plot_g, Caption = NULL, Tag = NULL,
                      vec.res = 300)
 {
   func.env <- new.env()
+
+  # Ouput diminsions in pixels
+  HeightP <- Width * vec.res
+  WidthP <- Height * vec.res
+
   # handle ggplot objects
   if(ggplot2::is.ggplot(plot_g)){
     # convert wxh into pixels
     Width <- Width * vec.res
     Height <- Height * vec.res
     plot.return <- pander::evals('plot_g', res = vec.res, env = func.env,
-                                 width = Width, height = Height)[[1]]$result
+                                 width = WidthP, height = HeightP)[[1]]$result
   }else if(file.exists(plot_g)){ # handle image files
     if(grepl('pdf',plot_g)){
-      plot.i <- magick::image_read(plot_g, density = vec.res, depth = 8)
+      stop("cat_pir2: pdfs are not handled yet")
+      # plot.i <- magick::image_read(plot_g, density = vec.res, depth = 8)
     }else{
-      plot.i <- magick::image_read(plot_g)
+      plot.i <- imager::load.image(plot_g)
+      # plot.i <- magick::image_read(plot_g)
     }
-    # set height
-    Height = as.character(72 * Height)
-    Width = as.character(72 * Width)
-    if(is.null(Width)){
-      magick::image_scale(plot.i, paste0('x', Height))
-    }else if(is.null(Height)){
-      magick::image_scale(plot.i, paste0(Width, 'x'))
-    }else if(!is.null(Width) & !is.null(Height)){
-      magick::image_scale(plot.i, paste0(Width, 'x', Height))
-    }
-    magick::image_write(plot.i, plot_g)
+
+    # Get diminsions of plot.i
+    plotW <- imager::width(plot.i)
+    plotH <- imager::height(plot.i)
+
+    # Rescale
+    plotWR <- as.integer(-(tmpW/WidthP * 100))
+    plotHR <- as.integer(-(tmpH/HeightP * 100))
+
+    plot.i <- imager::resize(plot.i, size_x = plotWR, size_y = plotHR)
+
+    imager::save.image(plot.i, plot_g)
+
+    # Height = as.character(72 * Height)
+    # Width = as.character(72 * Width)
+    # if(is.null(Width)){
+    #   magick::image_scale(plot.i, paste0('x', Height))
+    # }else if(is.null(Height)){
+    #   magick::image_scale(plot.i, paste0(Width, 'x'))
+    # }else if(!is.null(Width) & !is.null(Height)){
+    #   magick::image_scale(plot.i, paste0(Width, 'x', Height))
+    # }
+    # magick::image_write(plot.i, plot_g)
     plot.return <- plot_g
   }
   cat(pander::pandoc.image.return(plot.return, caption = Caption),
@@ -163,30 +182,49 @@ cat_pir3 <- function(plot_g, Caption = NULL, TagPre = NULL,
                      vec.res = 300)
 {
   func.env <- new.env()
+
+  # Ouput diminsions in pixels
+  HeightP <- Width * vec.res
+  WidthP <- Height * vec.res
+
   # handle ggplot objects
   if(ggplot2::is.ggplot(plot_g)){
     # convert wxh into pixels
     Width <- Width * vec.res
     Height <- Height * vec.res
     plot.return <- pander::evals('plot_g', res = vec.res, env = func.env,
-                                 width = Width, height = Height)[[1]]$result
+                                 width = WidthP, height = HeightP)[[1]]$result
   }else if(file.exists(plot_g)){ # handle image files
     if(grepl('pdf',plot_g)){
-      plot.i <- magick::image_read(plot_g, density = vec.res, depth = 8)
+      stop("cat_pir2: pdfs are not handled yet")
+      # plot.i <- magick::image_read(plot_g, density = vec.res, depth = 8)
     }else{
-      plot.i <- magick::image_read(plot_g)
+      plot.i <- imager::load.image(plot_g)
+      # plot.i <- magick::image_read(plot_g)
     }
-    # set height
-    Height = as.character(72 * Height)
-    Width = as.character(72 * Width)
-    if(is.null(Width)){
-      magick::image_scale(plot.i, paste0('x', Height))
-    }else if(is.null(Height)){
-      magick::image_scale(plot.i, paste0(Width, 'x'))
-    }else if(!is.null(Width) & !is.null(Height)){
-      magick::image_scale(plot.i, paste0(Width, 'x', Height))
-    }
-    magick::image_write(plot.i, plot_g)
+
+    # Get diminsions of plot.i
+    plotW <- imager::width(plot.i)
+    plotH <- imager::height(plot.i)
+
+    # Rescale
+    plotWR <- as.integer(-(tmpW/WidthP * 100))
+    plotHR <- as.integer(-(tmpH/HeightP * 100))
+
+    plot.i <- imager::resize(plot.i, size_x = plotWR, size_y = plotHR)
+
+    imager::save.image(plot.i, plot_g)
+
+    # Height = as.character(72 * Height)
+    # Width = as.character(72 * Width)
+    # if(is.null(Width)){
+    #   magick::image_scale(plot.i, paste0('x', Height))
+    # }else if(is.null(Height)){
+    #   magick::image_scale(plot.i, paste0(Width, 'x'))
+    # }else if(!is.null(Width) & !is.null(Height)){
+    #   magick::image_scale(plot.i, paste0(Width, 'x', Height))
+    # }
+    # magick::image_write(plot.i, plot_g)
     plot.return <- plot_g
   }
   Caption <- paste(Caption, collapse = " ")

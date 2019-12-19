@@ -57,10 +57,6 @@ setWorkspace <- function(){
 #' @importFrom magrittr %>%
 #' @export
 setpaths <- function(workspace = NULL, recurse = NA){
-  if(!exists("verbose")){
-    verbose <- FALSE
-  }
-
   # Set workspace if NULL
   if(is.null(workspace)){
     workspace <- list(ws = setWorkspace())
@@ -73,7 +69,8 @@ setpaths <- function(workspace = NULL, recurse = NA){
   # Create path list starting with dirs in workspace
   wsPaths <-
     lapply(workspace, function(x){
-      as.list(list.dirs(x, recursive = FALSE)) %>%
+      x<<- x
+      c(x, as.list(list.dirs(x, recursive = FALSE))) %>%
         stats::setNames(paste0("_", basename(unlist(.))))
     })
 
