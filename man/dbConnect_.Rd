@@ -6,7 +6,7 @@
 \usage{
 dbConnect_(
   Group = "EPA_harshadb",
-  defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
+  defaultFile = file.path(path$ws$`_workspace`, ".my.cnf"),
   verbose = FALSE,
   ...
 )

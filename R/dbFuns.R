@@ -17,7 +17,7 @@
 #' @param verbose provide feedback to user
 #' @export
 dbConnect_ <- function(Group = "EPA_harshadb",
-                       defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
+                       defaultFile = file.path(path$ws$`_workspace`, ".my.cnf"),
                        verbose = FALSE, ...){
   # Make Connection
   con <- suppressWarnings(DBI::dbConnect(RMariaDB::MariaDB(),

@@ -4,12 +4,14 @@
 \alias{setpaths}
 \title{Set paths}
 \usage{
-setpaths(workspace = NULL, recurse = NA)
+setpaths(workspace = NULL, otherPaths = NULL, recurse = NA)
 }
 \arguments{
 \item{workspace}{Path to workspace}
 
-\item{recurse}{list of directories to get resursively}
+\item{otherPaths}{named list of paths outside of workspace to include}
+
+\item{recurse}{list of directories to get recursively}
 }
 \value{
 A list named paths is assigned to the global environment.
