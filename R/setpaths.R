@@ -63,12 +63,16 @@ setpaths <-
 
     # Testiing
     if(!T){
-      otherPaths <- list(LMC = normalizePath(file.path("L:/Priv/Cin/ORD/LakeHarshaMC"),
-                                             winslash = "/", mustWork = FALSE),
-                         CHL = normalizePath(file.path("L:/Priv/Cin/NRMRL/Chlorophyll"),
-                                             winslash = "/", mustWork = FALSE),
-                         L35 = normalizePath(file.path("L:/Lab/Lablan/MSE/Lamba35"),
-                                             winslash = "/", mustWork = FALSE))
+      workspace <- NULL
+      otherPaths <-
+        list(
+          wd = getwd(),
+          LMC = normalizePath(file.path("L:/Priv/Cin/ORD/LakeHarshaMC"),
+                              winslash = "/", mustWork = FALSE),
+          CHL = normalizePath(file.path("L:/Priv/Cin/NRMRL/Chlorophyll"),
+                              winslash = "/", mustWork = FALSE),
+          L35 = normalizePath(file.path("L:/Lab/Lablan/MSE/Lamba35"),
+                              winslash = "/", mustWork = FALSE))
       recurse <- list("LHdata")
     }
 
@@ -90,26 +94,23 @@ setpaths <-
           c(stats::setNames(workspace[[x]], x),
             as.list(
               list.dirs(workspace[[x]], recursive = FALSE)) %>%
-              stats::setNames(paste0(x, "/", basename(unlist(.)))))
+              stats::setNames(gsub(" ", "_", paste0(x, "_", basename(unlist(.))))))
         }),
         recursive = FALSE)
 
     # Dirs to get recursively
     if(!is.na(recurse)){
-      wsPaths <-
-        lapply(wsPaths, function(pList){
-          if(any(grepl(recurse, pList))){
-            c(pList,
-              unlist(
-                lapply(recurse, function(x, pList){
-                  Path <- as.list(list.dirs(pList[grepl(paste0("(?i)", x, "$"), pList)]))
-                  pNames <- paste0(".",
-                                   regmatches(Path, gregexpr(paste0("(?i)", x, ".+$"), Path)))
-                  names(Path) <- pNames
-                  Path
-                }, unlist(pList))))
-          } else pList
-        })
+      for(x in recurse){
+        for(i in which(grepl(x, wsPaths))){
+          Path <- list.dirs(as.character(wsPaths[i]))[-1]
+          if(length(Path) > 0){
+            pNames <- regmatches(Path, gregexpr(paste0("(?i)", x, ".+$"), Path))
+            pNames <- gsub("[\\s\\/]", "_", pNames, perl = TRUE)
+            names(Path) <- pNames
+            wsPaths <- c(wsPaths, Path)
+          }
+        }
+      }
     }
 
     assign("path", wsPaths, envir = .GlobalEnv)
