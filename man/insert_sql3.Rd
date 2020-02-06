@@ -26,9 +26,9 @@ insert_sql3(
 \item{verbose}{provide feedback to user}
 }
 \description{
-Uses parameterized statement with option to replace if exists
+By default, uses parameterized INSERT IGNORE statement with option to replace if exists.
 }
 \details{
-replaceifexists = TRUE is slower
-Note: REPLACE makes sense only if a table has a PRIMARY KEY or UNIQUE index. Otherwise, it becomes equivalent to INSERT, because there is no index to be used to determine whether a new row duplicates another.
+INSERT IGNORE will allow inserts if primary key does not exist and ignores inserts where it does preventing failure of statement when values exist.
+Note: REPLACE makes sense only if a table has a PRIMARY KEY or UNIQUE index. Otherwise, it becomes equivalent to INSERT, because there is no index to be used to determine whether a new row duplicates another. replaceifexists = TRUE is slower.
 }

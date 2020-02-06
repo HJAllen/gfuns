@@ -476,10 +476,10 @@ upsert_sql3 <- function(dataF, tName, key = NULL,
 
 #' Function to insert values into db table
 #'
-#' Uses parameterized statement with option to replace if exists
+#' By default, uses parameterized INSERT IGNORE statement with option to replace if exists.
 #'
-#' replaceifexists = TRUE is slower
-#' Note: REPLACE makes sense only if a table has a PRIMARY KEY or UNIQUE index. Otherwise, it becomes equivalent to INSERT, because there is no index to be used to determine whether a new row duplicates another.
+#' INSERT IGNORE will allow inserts if primary key does not exist and ignores inserts where it does preventing failure of statement when values exist.
+#' Note: REPLACE makes sense only if a table has a PRIMARY KEY or UNIQUE index. Otherwise, it becomes equivalent to INSERT, because there is no index to be used to determine whether a new row duplicates another. replaceifexists = TRUE is slower.
 #' @param dataF data frame to be appended
 #' @param tName table to appand data to
 #' @param Group Group identifier found in .my.cnf
@@ -545,7 +545,7 @@ insert_sql3 <- function(dataF, tName, replaceifexists = FALSE,
                    ")")
   }else{
     # Create SELECT statement
-    sql_ <- paste0("INSERT INTO ", tName, " (",
+    sql_ <- paste0("INSERT IGNORE INTO ", tName, " (",
                    paste0("`", fields, "`", collapse = ", "),
                    ") VALUES(",
                    paste(rep("?", length(fields)), collapse = ","),
