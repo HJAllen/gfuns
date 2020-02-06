@@ -186,24 +186,35 @@ send_sql3 <- function(dataF,
 # DBI::dbFetch(rs)
 # DBI::dbClearResult(rs)
 
-
-
-
-#' Function to append dataframe to db table
+#' Function to create a new db table from dataframe or append dataframe to existing db table.
 #'
 #' Submit data to be appended to database table using RMariaDB. Output 0 or 1 based on success if verbose = TRUE May want to add secure credentials method.
 #' @param dataF data frame to be appended
 #' @param tName table to appand data to
 #' @param Group Group identifier found in .my.cnf
+#' @param Append boolean defaults to TRUE. If True, dataF is appended to existing table. If FALSE and tName does not exist, a new table is created using dataF.
 #' @param defaultFile file where Group credentials are found
 #' @param header_ logical whether first row is header
+#' @param rowNames boolean passed to dbWriteTable, defaults to FALSE. If True, row names are translated into column row_names.
 #' @param verbose provide feedback to user
 #' @export
-append_sql3 <- function(dataF, tName,
+append_sql3 <- function(dataF, tName, Append = TRUE,
                         Group = "EPA_harshadb",
                         defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
-                        header_ = FALSE, verbose = FALSE,
+                        header_ = FALSE, rowNames = FALSE, verbose = FALSE,
                         ...){
+  # Testing
+  if(FALSE){
+    dataF <- samples[1]$Template[[1]]
+    tName <- "chl_analysis_template"
+    Append <- FALSE
+    Group <- "EPA_chl_wsd_admin"
+    defaultFile <- file.path(gfuns::sg("ws"), ".my.cnf")
+    header_ <- FALSE
+    rowNames <- FALSE
+    verbose <- !FALSE
+  }
+
   # Set on exit
   on.exit(expr = {
     if(exists("con")){
@@ -223,24 +234,26 @@ append_sql3 <- function(dataF, tName,
     # If connection is valid continue
     if(DBI::dbIsValid(con)){
       if(verbose) print(con)
+      # Does tName exist
+      tNameExists <-
+        DBI::dbExistsTable(con, tName)
       # Make sure table exists
-      if(!DBI::dbExistsTable(con, tName)){
-        message(paste(tName, "does not exist"))
-        stop()
+      if(!tNameExists & Append == TRUE){
+        stop("Attempting to append to ", tName, " which does not exist")
       }
-      # Append the table
+      # If Append = TRUE, append the table
+      # Else, create the table
       # overwrite = False is default so should fail if record exists
-      rs <- DBI::dbWriteTable(conn = con, name = tName,
-                              value = dataF, append = TRUE,
-                              header = header_, row.names = FALSE)
+      rs <-
+        DBI::dbWriteTable(conn = con, name = tName,
+                          value = dataF, append = Append,
+                          header = header_, row.names = rowNames)
       # Return logical if verbose otherwise quit silently
       if(verbose){
-        message(paste("Append to ", tName, "succeeded =", rs))
-        rs
+        message(ifelse(Append, "Append to ", "Create "), tName, ifelse(rs, " succeeded", " failed"))
       }
     }else{
-      message("Connection to DB failed")
-      stop()
+      stop("Connection to DB failed")
     }
   }, error = function(e) print(e))
 }

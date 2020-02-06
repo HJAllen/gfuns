@@ -2,14 +2,16 @@
 % Please edit documentation in R/dbFuns.R
 \name{append_sql3}
 \alias{append_sql3}
-\title{Function to append dataframe to db table}
+\title{Function to create a new db table from dataframe or append dataframe to existing db table.}
 \usage{
 append_sql3(
   dataF,
   tName,
+  Append = TRUE,
   Group = "EPA_harshadb",
   defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
   header_ = FALSE,
+  rowNames = FALSE,
   verbose = FALSE,
   ...
 )
@@ -19,11 +21,15 @@ append_sql3(
 
 \item{tName}{table to appand data to}
 
+\item{Append}{boolean defaults to TRUE. If True, dataF is appended to existing table. If FALSE and tName does not exist, a new table is created using dataF.}
+
 \item{Group}{Group identifier found in .my.cnf}
 
 \item{defaultFile}{file where Group credentials are found}
 
 \item{header_}{logical whether first row is header}
+
+\item{rowNames}{boolean passed to dbWriteTable, defaults to FALSE. If True, row names are translated into column row_names.}
 
 \item{verbose}{provide feedback to user}
 }
