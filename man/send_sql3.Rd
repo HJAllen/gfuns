@@ -5,8 +5,8 @@
 \title{Function to send sql statement}
 \usage{
 send_sql3(
-  dataF,
-  tName,
+  dataF = NULL,
+  tName = NULL,
   returnClass = "data.table",
   sql = "SELECT * FROM ",
   Group = "EPA_harshadb",
@@ -34,5 +34,5 @@ send_sql3(
 \item{CLIENT_MULTI_STATEMENTS_}{logical to use CLIENT_MULTI_STATEMENTS}
 }
 \description{
-Submit sql statement using RMariaDB. May want to add secure credentials method.
+Submit sql statement using RMariaDB. If dataF given, a the SQL statement will be parameterized. May want to add secure credentials method.
 }

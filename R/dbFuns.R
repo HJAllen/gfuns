@@ -47,9 +47,10 @@ get_sql3 <- function(sql, Group = "EPA_harshadb",
                      defaultFile = file.path(gfuns::sg("ws"), ".my.cnf"),
                      verbose = FALSE, ...){
   # Set on exit
+  # Set on exit
   on.exit(expr = {
     if(exists("con")){
-      suppressWarnings(DBI::dbDisconnect(con))
+      if(inherits(con, "DBIConnection")) suppressWarnings(DBI::dbDisconnect(con))
       rm(con)
     }
   })
@@ -74,7 +75,7 @@ get_sql3 <- function(sql, Group = "EPA_harshadb",
 
 #' Function to send sql statement
 #'
-#' Submit sql statement using RMariaDB. May want to add secure credentials method.
+#' Submit sql statement using RMariaDB. If dataF given, a the SQL statement will be parameterized. May want to add secure credentials method.
 #' @param dataF If given, data frame of key values to be used in parameterized statement.
 #' @param tName table name
 #' @param returnClass class of return object. Should be one of data.table, tibble, or data.frame.
@@ -84,8 +85,8 @@ get_sql3 <- function(sql, Group = "EPA_harshadb",
 #' @param verbose provide feedback to user
 #' @param CLIENT_MULTI_STATEMENTS_ logical to use CLIENT_MULTI_STATEMENTS
 #' @export
-send_sql3 <- function(dataF,
-                      tName,
+send_sql3 <- function(dataF = NULL,
+                      tName = NULL,
                       returnClass = "data.table",
                       sql = "SELECT * FROM ",
                       Group = "EPA_harshadb",
@@ -99,47 +100,49 @@ send_sql3 <- function(dataF,
   # Set on exit
   on.exit(expr = {
     if(exists("con")){
-      suppressWarnings(DBI::dbDisconnect(con))
+      if(inherits(con, "DBIConnection")) suppressWarnings(DBI::dbDisconnect(con))
       rm(con)
     }
     if(exists("rs")){
-      suppressWarnings(DBI::dbClearResult(rs))
+      if(inherits(rs, "DBIResult")) suppressWarnings(DBI::dbClearResult(rs))
       rm(rs)
     }
   })
 
   # If sql is a data set, run parameterized query, else run sql as query
-  if(!inherits(dataF, "data.frame")){
-    stop("dataF is not a data.frame")
-  }
+  if(inherits(dataF, "data.frame")){
+    # Check for tName
+    if(is.null(tName)){
+      stop("gfuns::send_sql3: tName cannot be null for parameterized statement")
+    }
+    # Establish Fields
+    fields <- names(dataF)
 
-  # Establish Fields
-  fields <- names(dataF)
+    # Get primary key(s)
+    PK <- get_PrimaryKeys(tName, Group = Group)
 
-  # Get primary key(s)
-  PK <- get_PrimaryKeys(tName, Group = Group)
+    # Make sure sql has all primary keys
+    if(!all(PK %in% fields)){
+      stop(paste(PK[!PK %in% fields], "gfuns::send_sql3: While attempting parameterized sql, not all Primary Keys in table"))
+    }
 
-  # Make sure sql has all primary keys
-  if(!all(PK %in% fields)){
-    stop(paste(PK[!PK %in% fields], "While attempting parameterized sql, not all Primary Keys in table"))
-  }
-
-  # Arrange dataF
-  dataF_ <-
-    dataF %>%
-    dplyr::select(dplyr::one_of(PK)) %>%
     # Arrange dataF
-    as.list() %>%
-    # Remove names for anonymous
-    unname()
+    dataF_ <-
+      dataF %>%
+      dplyr::select(dplyr::one_of(PK)) %>%
+      # Arrange dataF
+      as.list() %>%
+      # Remove names for anonymous
+      unname()
 
-  # Create Select statement
-  sql <- paste0(sql, tName, " WHERE ",
-                paste0("`", PK, "`", collapse = "= ? AND "), " = ?;")
+    # Create Select statement
+    sql <- paste0(sql, tName, " WHERE ",
+                  paste0("`", PK, "`", collapse = "= ? AND "), " = ?;")
 
-  if(verbose) print(dim(dataF))
-  if(verbose) print(head(dataF))
-  if(verbose) print(sql_)
+    if(verbose) print(dim(dataF))
+    if(verbose) print(head(dataF))
+    if(verbose) print(sql_)
+  }
 
   # open the connection using user, passsword, etc., as
   tryCatch({
@@ -148,33 +151,40 @@ send_sql3 <- function(dataF,
     # If connection is valid continue
     if(DBI::dbIsValid(con)){
       if(verbose) print(con)
-      # Send statements
-      rs <- DBI::dbSendQuery(con, statement = sql)
       # If parameterized statement
       if(!is.null(dataF)){
+        # Send statements
+        rs <- DBI::dbSendQuery(con, statement = sql)
+        # Bind
         DBI::dbBind(rs, dataF_)
-      }
-      result <-
-        DBI::dbFetch(rs) %>%
-        switch(returnClass,
-               data.table = data.table::as.data.table(.),
-               tibble = tibble::as_tibble(.),
-               .)
 
-      if(DBI::dbHasCompleted(rs)){
-        if(verbose) message("Statment succeeded.")
-        DBI::dbClearResult(rs)
-        return(result)
-      }else{
-        message("Statement failed.")
-        return(NULL)
+        result <-
+          DBI::dbFetch(rs) %>%
+          switch(returnClass,
+                 data.table = data.table::as.data.table(.),
+                 tibble = tibble::as_tibble(.),
+                 .)
+
+        if(DBI::dbHasCompleted(rs)){
+          if(verbose) message("gfuns::send_sql3: Statment succeeded.")
+          DBI::dbClearResult(rs)
+          return(result)
+        }else{
+          message("gfuns::send_sql3: Statement failed.")
+          return(NULL)
+        }
+
+      } else{
+        # dbExecute statment
+        rs <- DBI::dbExecute(con, sql)
+        # give results
+        if(verbose) message(rs, " rows affected")
       }
     }else{
       message("Connection to DB failed")
       return(NULL)
     }
-
-  },error = function(e) print(e))
+  }, error = function(e) print(e))
 }
 #
 # dataF_ <-
@@ -207,7 +217,7 @@ append_sql3 <- function(dataF, tName, Append = TRUE,
   if(FALSE){
     dataF <- samples[1]$Template[[1]]
     tName <- "chl_analysis_template"
-    Append <- FALSE
+    Append <- !FALSE
     Group <- "EPA_chl_wsd_admin"
     defaultFile <- file.path(gfuns::sg("ws"), ".my.cnf")
     header_ <- FALSE
@@ -216,12 +226,14 @@ append_sql3 <- function(dataF, tName, Append = TRUE,
   }
 
   # Set on exit
+  # Set on exit
   on.exit(expr = {
     if(exists("con")){
-      suppressWarnings(DBI::dbDisconnect(con))
+      if(inherits(con, "DBIConnection")) suppressWarnings(DBI::dbDisconnect(con))
       rm(con)
     }
     if(exists("rs")){
+      if(inherits(rs, "DBIResult")) suppressWarnings(DBI::dbClearResult(rs))
       rm(rs)
     }
   })
@@ -229,8 +241,8 @@ append_sql3 <- function(dataF, tName, Append = TRUE,
   # open the connection using user, passsword, etc., as
   tryCatch({
     con <- gfuns::dbConnect_(defaultFile = defaultFile,
-                             Group = Group
-    )
+                             Group = Group)
+
     # If connection is valid continue
     if(DBI::dbIsValid(con)){
       if(verbose) print(con)
@@ -273,13 +285,14 @@ update_sql3 <- function(dataF, tName, key = NULL,
                         verbose = FALSE, ...)
 {
   # Set on exit
+  # Set on exit
   on.exit(expr = {
     if(exists("con")){
-      suppressWarnings(DBI::dbDisconnect(con))
+      if(inherits(con, "DBIConnection")) suppressWarnings(DBI::dbDisconnect(con))
       rm(con)
     }
     if(exists("rs")){
-      suppressWarnings(DBI::dbClearResult(rs))
+      if(inherits(rs, "DBIResult")) suppressWarnings(DBI::dbClearResult(rs))
       rm(rs)
     }
   })
@@ -386,13 +399,14 @@ upsert_sql3 <- function(dataF, tName, key = NULL,
                         verbose = FALSE, ...)
 {
   # Set on exit
+  # Set on exit
   on.exit(expr = {
     if(exists("con")){
-      suppressWarnings(DBI::dbDisconnect(con))
+      if(inherits(con, "DBIConnection")) suppressWarnings(DBI::dbDisconnect(con))
       rm(con)
     }
     if(exists("rs")){
-      suppressWarnings(DBI::dbClearResult(rs))
+      if(inherits(rs, "DBIResult")) suppressWarnings(DBI::dbClearResult(rs))
       rm(rs)
     }
   })
@@ -524,16 +538,15 @@ insert_sql3 <- function(dataF, tName, replaceifexists = FALSE,
   }
 
   # Set on exit
+  # Set on exit
   on.exit(expr = {
-    # Clear result set
-    if(exists("rs")){
-      suppressWarnings(DBI::dbClearResult(rs))
-      rm(rs)
-    }
-    # Disconnect con
     if(exists("con")){
-      suppressWarnings(DBI::dbDisconnect(con))
+      if(inherits(con, "DBIConnection")) suppressWarnings(DBI::dbDisconnect(con))
       rm(con)
+    }
+    if(exists("rs")){
+      if(inherits(rs, "DBIResult")) suppressWarnings(DBI::dbClearResult(rs))
+      rm(rs)
     }
   })
 
