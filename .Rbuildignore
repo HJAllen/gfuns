@@ -3,4 +3,4 @@
 ^data-raw$
 ^README\.Rmd$
 ^README-.*\.png$
-^archive$
+^.*\archive$

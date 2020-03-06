@@ -46,7 +46,6 @@ rll <- function(l = NULL){
 #' Load subset or all .RData objects from submitted path
 #' @param Path path to Robjects
 #' @param objectList list of objects to load
-#' @export
 loadRData <-
   function(Path = gfuns::sg("lh_Robjects"), objectList = NULL){
     # If Path doesn't exist, quit
