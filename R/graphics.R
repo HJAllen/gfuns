@@ -303,3 +303,9 @@ read_excelq <-  function(...) {
     return(out[["result"]])
   else readxl::read_excel(...)
 }
+
+#' #' Function to modify ggplot facet_grid panel labels
+#' #' @export
+#' plot_labeller <- function(variable,value){
+#'   return(plot_names[value])
+#' }

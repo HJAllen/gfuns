@@ -14,7 +14,14 @@
 #' @param Force Boolean. If TRUE, Robj is removed and and altFunc executed.
 #' @param verbose give feedback
 #' @export
-loadRdata <- function(RobjFP, altFunc = NULL, Robj = NULL, env = NULL, saveRobj = TRUE, Force = FALSE, verbose = FALSE){
+loadRdata <- function(RobjFP,
+                      altFunc = NULL,
+                      Robj = NULL,
+                      env = NULL,
+                      saveRobj = TRUE,
+                      Force = FALSE,
+                      verbose = FALSE,
+                      ...){
 
   # Test
   if(FALSE){
@@ -89,15 +96,8 @@ loadRdata <- function(RobjFP, altFunc = NULL, Robj = NULL, env = NULL, saveRobj 
 
     altFuncResult <-
       tryCatch({
-        # Run and assign
-        do.call(assign,
-                args = list(x = Robj,
-                            # Run altFunc
-                            value = altFunc(),
-                            envir = env))
-
-        # Return Null to altFuncResults
-        NULL
+        # Return results of altFunc
+        altFunc()
       },
       error = function(e){
         emsg <- paste("gfuns::loadRdata: Execution of altFunc failed with error", e)
@@ -105,8 +105,13 @@ loadRdata <- function(RobjFP, altFunc = NULL, Robj = NULL, env = NULL, saveRobj 
         emsg
       })
 
+    print(tracemem(altFuncResult))
+
     # If altFunc is not error
     if(is.null(attr(altFuncResult, "isError"))){
+      # Assign to global env
+      assign(Robj, altFuncResult, envir = .GlobalEnv)
+      print(tracemem(get(Robj)))
 
       # Write files to .Rdata
       if(saveRobj){
@@ -115,7 +120,7 @@ loadRdata <- function(RobjFP, altFunc = NULL, Robj = NULL, env = NULL, saveRobj 
       }
 
     } else {
-      message("gfuns::loadRdata: ", attr(altFuncResult, "isError"))
+      message("gfuns::loadRdata: ", altFuncResult, "isError")
     }
 
   } else {
@@ -162,3 +167,32 @@ loadRdata <- function(RobjFP, altFunc = NULL, Robj = NULL, env = NULL, saveRobj 
     )
   )
 }
+
+
+#' Load subset or all .RData objects from submitted path
+#' @param Path path to Robjects
+#' @param objectList list of objects to load
+loadRData <-
+  function(Path = gfuns::sg("lh_Robjects"), objectList = NULL){
+    # If Path doesn't exist, quit
+    if(!dir.exists(Path)){
+      warning(paste("Path does not exist. Data not loaded."))
+      return()
+    }
+    # if no object list, get all with .RData extension
+    if(is.null(objectList)){
+      fList <- list.files(Path, pattern = ".RData", full.names = TRUE)
+      # print(fList)
+    }else{
+      fList <- file.path(Path, paste0(objectList, ".RData"))
+      # check if fList exist
+      fChk <- file.exists((fList))
+      if(!all(fChk)){
+        warning(paste(fList[!fChk], "file not found and will not be loaded", "\n"))
+        fList <- fList[fChk]
+      }
+    }
+    # toNull suppresses printing of object name
+    toNull <-
+      lapply(fList, load, .GlobalEnv, verbose = F)
+  }
