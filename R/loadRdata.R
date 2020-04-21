@@ -29,8 +29,8 @@ loadRdata <- function(RobjFP,
     altFunc <- NULL
     Robj <- NULL
     env <- NULL
-    saveRobj <- !TRUE
-    Force <- FALSE
+    saveRobj <- TRUE
+    Force <- !FALSE
     verbose <- !FALSE
     #
     # altFunc <- function() tmp <- "A"
@@ -61,12 +61,12 @@ loadRdata <- function(RobjFP,
   # If Force, remove Robj from RobjectsPath and .GlobalEnv
   if(Force){
     if(file.exists(RobjFP)){
-      if(verbose) message(paste("gfuns::loadRdata: Deleting file:", RobjFP))
+      if(verbose) message(paste("gfuns::loadRdata: Deleting file:", basename(RobjFP)))
       file.remove(RobjFP)
       if(verbose){
         if(file.exists(RobjFP)){
-          message(paste("gfuns::loadRdata: ", RobjFP, "not removed"))
-        } else message(paste("gfuns::loadRdata:", RobjFP, "removed"))
+          message(paste("gfuns::loadRdata: ", basename(RobjFP), "not removed"))
+        } else message(paste("gfuns::loadRdata:", basename(RobjFP), "removed"))
       }
     }
     # Remove Robj from env
@@ -97,7 +97,7 @@ loadRdata <- function(RobjFP,
     altFuncResult <-
       tryCatch({
         # Return results of altFunc
-        altFunc()
+        do.call(altFunc, args = list(arg = NULL))
       },
       error = function(e){
         emsg <- paste("gfuns::loadRdata: Execution of altFunc failed with error", e)
@@ -105,22 +105,19 @@ loadRdata <- function(RobjFP,
         emsg
       })
 
-    print(tracemem(altFuncResult))
-
     # If altFunc is not error
     if(is.null(attr(altFuncResult, "isError"))){
       # Assign to global env
       assign(Robj, altFuncResult, envir = .GlobalEnv)
-      print(tracemem(get(Robj)))
 
       # Write files to .Rdata
       if(saveRobj){
-        if(verbose) message(paste("gfuns::loadRdata: Saving", Robj, "to", RobjFP))
+        if(verbose) message(paste("gfuns::loadRdata: Saving", Robj, "to", basename(RobjFP)))
         save(list = Robj, file = RobjFP)
       }
 
     } else {
-      message("gfuns::loadRdata: ", altFuncResult, "isError")
+      message(altFuncResult)
     }
 
   } else {
@@ -144,8 +141,8 @@ loadRdata <- function(RobjFP,
       load(RobjFP, envir = env)
     if(verbose){
       if(exists(eval(Robj))){
-        message(paste("gfuns::loadRdata: added to env."))
-      } else message(paste("gfuns::loadRdata: not added to env."))
+        message(paste("gfuns::loadRdata:", Robj, "added to env."))
+      } else message(paste("gfuns::loadRdata:", Robj, "not added to env."))
     }
   }
 
