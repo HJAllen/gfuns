@@ -55,13 +55,17 @@ setWorkspace <- function(){
 #' @param workspace Path to workspace
 #' @param otherPaths named list of paths outside of workspace to include
 #' @param recurse list of directories to get recursively
+#' @param depth integer, depth of directories to recurse
+#' @param verbose logical to provide diagnostic feedback
 #' @export
 setpaths <-
   function(workspace = NULL,
            otherPaths = NULL,
-           recurse = NA){
+           recurse = NULL,
+           depth = 1,
+           verbose = F){
 
-    # Testiing
+    # Testing
     if(!T){
       workspace <- NULL
       otherPaths <-
@@ -73,47 +77,69 @@ setpaths <-
                               winslash = "/", mustWork = FALSE),
           L35 = normalizePath(file.path("L:/Lab/Lablan/MSE/Lamba35"),
                               winslash = "/", mustWork = FALSE))
-      recurse <- list("LHdata")
+      recurse <- NULL#list("LHdata")
+      depth <- 1
     }
 
+    if(verbose){
+      message("gfuns::setpaths: Initial workspace")
+      # print(workspace)
+      message("gfuns::setpaths: Initial otherPaths")
+      # print(otherPaths)
+    }
+
+    wsPaths <-
     # Set workspace if NULL
     if(is.null(workspace)){
-      workspace <- list(ws = gfuns::setWorkspace())
-    }
+      list(ws = gfuns::setWorkspace())
+    } else workspace
 
-    # if otherPaths given, add to workspace
+    # if otherPaths given, add to wsPaths
     if(!is.null(otherPaths)){
-      workspace <- c(workspace, otherPaths)
+      wsPaths <- c(wsPaths, otherPaths)
     }
 
-    # Create path list starting with dirs in workspace
+    # Convert to data.frame
     wsPaths <-
-      unlist(
-        lapply(names(workspace), function(x){
-          # print(workspace[[x]])
-          c(stats::setNames(workspace[[x]], x),
-            as.list(
-              list.dirs(workspace[[x]], recursive = FALSE)) %>%
-              stats::setNames(gsub(" ", "_", paste0(x, "_", basename(unlist(.))))))
-        }),
-        recursive = FALSE)
+      do.call(rbind,
+              lapply(names(wsPaths), function(x){
+                data.frame(dir = wsPaths[[x]],
+                           name = x,
+                           level = 0,
+                           pName = NA_character_)
+              }))
 
     # Dirs to get recursively
-    if(!is.na(recurse)){
-      for(x in recurse){
-        for(i in which(grepl(x, wsPaths))){
-          Path <- list.dirs(as.character(wsPaths[i]))[-1]
-          if(length(Path) > 0){
-            pNames <- regmatches(Path, gregexpr(paste0("(?i)", x, ".+$"), Path))
-            pNames <- gsub("[\\s\\/]", "_", pNames, perl = TRUE)
-            names(Path) <- pNames
-            wsPaths <- c(wsPaths, Path)
+    if(!is.null(recurse) | depth > 0){
+      if(is.null(recurse)){
+        recurse <- wsPaths
+      } else {
+        recurse <- wsPaths[wsPaths$name %in% recurse,]
+      }
+      # for each root path to recurse
+      for(root in recurse$name[recurse$level == 0]){
+        # for each depth
+        for(i in 1:depth){
+          # Parent level name
+          pNames <- wsPaths$name[grepl(root, wsPaths$name) & wsPaths$level == i - 1]
+          for(pName in pNames){
+            # for each path to recurse
+            pDF <-
+              data.frame(dir = list.dirs(wsPaths$dir[wsPaths$name %in% pName], recursive = FALSE))
+
+            # if pDF is N >0
+            if(nrow(pDF) > 1){
+              pDF$name <- paste(pName, basename(pDF$dir), sep = "_")
+              pDF$level <- i
+              pDF$pName <- pName
+              wsPaths <- rbind(wsPaths, pDF)
+            }
           }
         }
       }
     }
 
-    assign("path", wsPaths, envir = .GlobalEnv)
+    assign("path", stats::setNames(as.list(wsPaths$dir), wsPaths$name), envir = .GlobalEnv)
     if(verbose) message("path set")
 }
 

@@ -169,7 +169,7 @@ loadRdata <- function(RobjFP,
 #' Load subset or all .RData objects from submitted path
 #' @param Path path to Robjects
 #' @param objectList list of objects to load
-loadRData <-
+loadRdata2 <-
   function(Path = gfuns::sg("lh_Robjects"), objectList = NULL){
     # If Path doesn't exist, quit
     if(!dir.exists(Path)){

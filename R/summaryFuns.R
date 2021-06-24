@@ -8,6 +8,13 @@
 #' @param ... parameters to be passed to sd and mean
 #' @export
 cv <- function(x, sigFig = NULL, ...){
+  # make sure x is length 2
+  if(length(x) != 2){
+    stop("gfuns::cv: length(x) != 2")
+  }
+  # If all equal, return 0
+  if(identical(x[1], x[2])) return(0)
+
   if(is.null(sigFig)){
     (stats::sd(x, ...)/mean(x, ...)) * 100
   } else {
@@ -23,6 +30,13 @@ cv <- function(x, sigFig = NULL, ...){
 #' @param sigFig if not null, the number of significant digits to report
 #' @export
 RPD <- function(x, sigFig = NULL){
+  # make sure x is length 2
+  if(length(x) != 2){
+    stop("gfuns::RPD: length(x) != 2")
+  }
+  # If all equal, return 0
+  if(identical(x[1], x[2])) return(0)
+
   if(is.null(sigFig)){
     abs(diff(x)) / mean(x) * 100
   } else {
@@ -203,3 +217,18 @@ pooled_sem <- function(x, confInt = 0.05, ...){
     u95 = round(Mean + stats::qnorm(1 - confInt / 2) * SEM, sigFig)
   )
 }
+
+#' Replace infinite values in data.table
+#'
+#' Given a data.table with Inf values, replace by reference
+#' @param DT data.table
+#' @param fillV value to substitute, defaults to NA
+#' @export
+infReplace <-
+  function(DT, fillV = NA_real_) {
+    # by number (slightly faster than by name) :
+    for (j in seq_len(ncol(DT)))
+      set(DT, which(is.infinite(DT[[j]])), j, fillV)
+    # Return DT to allow for use in piping
+    DT
+  }

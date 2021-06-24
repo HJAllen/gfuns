@@ -20,7 +20,7 @@ u2c <- function(x){
 
 #' Clean up unicode characters
 #'
-#' @param x character string
+#' @param x character string or list of character strings
 #' @param specials character matrix where col1 is character to replace and col2 is replacement character
 #' @param csv is file a csv
 #' @examples
@@ -29,24 +29,26 @@ u2c <- function(x){
 #' @export
 unicodeClean <- function(x, specials = matrix(c("b5", "u"), ncol = 2), csv = FALSE){
   # print(x)
-  # Strip trailing \t
-  x <- gsub("\\t$", "", x)
-  # If csv convert , to \t
-  if(csv)x <- gsub(",", "\\\t", x)
-  #convert to raw
-  x_ <- charToRaw(x)
-  # Remove trouble makers
-  # bo = degree sign
-  # b5 = greek mu
-  # c2 = goofy A
-  # ff and fe characters at beginning
-  x_ <- x_[!grepl("ff|fe|b0|c2", x_, perl = T)]
-  # Convert specials
-  if(!is.null(specials)){
-    for(i in 1:nrow(specials)){
-      x_[grepl(specials[i], x_)] <- charToRaw(specials[i + 1])
+  sapply(x, function(x){
+    # Strip trailing \t
+    x <- gsub("\\t$", "", x)
+    # If csv convert , to \t
+    if(csv)x <- gsub(",", "\\\t", x)
+    #convert to raw
+    x_ <- charToRaw(x)
+    # Remove trouble makers
+    # bo = degree sign
+    # b5 = greek mu
+    # c2 = goofy A
+    # ff and fe characters at beginning
+    x_ <- x_[!grepl("ff|fe|b0|c2", x_, perl = T)]
+    # Convert specials
+    if(!is.null(specials)){
+      for(i in 1:nrow(specials)){
+        x_[grepl(specials[i], x_)] <- charToRaw(specials[i + 1])
+      }
     }
-  }
-  # Convert back to character
-  ifelse(!is.null(x_), rawToChar(x_), x)
+    # Convert back to character
+    ifelse(!is.null(x_), rawToChar(x_), x)
+  }, USE.NAMES = FALSE)
 }

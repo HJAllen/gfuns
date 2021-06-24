@@ -141,7 +141,7 @@ send_sql3 <- function(dataF = NULL,
 
     if(verbose) print(dim(dataF))
     if(verbose) print(head(dataF))
-    if(verbose) print(sql_)
+    if(verbose) print(sql)
   }
 
   # open the connection using user, passsword, etc., as
@@ -340,7 +340,8 @@ update_sql3 <- function(dataF, tName, key = NULL,
   if(verbose) print(sql_)
 
   # Try UPDATE
-  tryCatch({
+  rowsAffected <-
+    tryCatch({
 
     # Open the connection
     con <- gfuns::dbConnect_(defaultFile = defaultFile,
@@ -369,7 +370,8 @@ update_sql3 <- function(dataF, tName, key = NULL,
       rowsAffected <- DBI::dbGetRowsAffected(rs)
       if(verbose) message(paste(rowsAffected, "Rows Updated"))
       DBI::dbClearResult(rs)
-    }else{
+      rowsAffected
+    } else{
       message("Connection to DB failed")
       stop()
     }
@@ -459,7 +461,8 @@ upsert_sql3 <- function(dataF, tName, key = NULL,
   if(verbose) print(sql_)
 
   # Try UPDATE
-  tryCatch({
+  rowsAffected <-
+    tryCatch({
     # Open the connection
     con <- gfuns::dbConnect_(defaultFile = defaultFile,
                              Group = Group)
@@ -487,6 +490,7 @@ upsert_sql3 <- function(dataF, tName, key = NULL,
       rowsAffected <- DBI::dbGetRowsAffected(rs)
       if(verbose) message(paste(rowsAffected, "Rows Updated"))
       DBI::dbClearResult(rs)
+      rowsAffected
     }else{
       message("Connection to DB failed")
       stop()
@@ -585,6 +589,7 @@ insert_sql3 <- function(dataF, tName, replaceifexists = FALSE,
   }
 
   # Try INSERT
+  rowsAffected <-
   tryCatch({
     # Open the connection
     con <- gfuns::dbConnect_(defaultFile = defaultFile,
@@ -610,6 +615,7 @@ insert_sql3 <- function(dataF, tName, replaceifexists = FALSE,
       rowsAffected <- DBI::dbGetRowsAffected(rs)
       if(verbose) message(paste(rowsAffected, "Rows Affected"))
       DBI::dbClearResult(rs)
+      rowsAffected
     }else{
       message("Connection to DB failed")
       stop()

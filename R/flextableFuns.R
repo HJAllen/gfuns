@@ -134,7 +134,7 @@ cat_ft <- function(df, Digits = 3, Caption = NULL,
   # cat("    </div>")
   # dfT
   cat("```{=openxml}\n")
-  cat(flextable:::docx_str.flextable(dfT), "\n")
+  cat(flextable:::docx_str(dfT), "\n")
   # cat(flextable:::docx_str.regulartable(dfT), "\n")
   # paste0(cat(Caption,"\n\n"))
   cat("```\n", Caption, "\n</div>\n")
