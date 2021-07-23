@@ -32,7 +32,9 @@ plotHandler <- function(visPlot = FALSE, makeObject = FALSE, savePlots = TRUE,
                         plt = ggplot2::last_plot(), device = c("pdf", "png", "wmf"),
                         dpi = 300){
   if(visPlot){
-    if(any(grepl("gTree", class(plt)))){
+    if(inherits(plt, "plotly")){
+      print(plt)
+    } else if(any(grepl("gTree", class(plt)))){
       grid::grid.newpage()
       grid::grid.draw(plt)
     } else plot(plt)
